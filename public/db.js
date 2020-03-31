@@ -1,13 +1,15 @@
-let db;
-const request = indexedDB.open("budget", 1);
 
+let db = request.result;
+
+const request = window.indexedDB.open("budget", 1);
 request.onupgradeneeded = function(event) {
-  const db = event.target.result;
-  db.createObjectStore("pending", { autoIncrement: true });
+  
+  const budgetStore = db.createObjectStore("pending");
+
 };
 
 request.onsuccess = function(event) {
-  db = event.target.result;
+  const db = target.result; 
 
   if (navigator.onLine) {
     checkDatabase();
@@ -15,20 +17,17 @@ request.onsuccess = function(event) {
 };
 
 request.onerror = function(event) {
-  console.log("Woops! " + event.target.errorCode);
+ 
 };
 
 function saveRecord(record) {
-  const transaction = db.transaction(["pending"], "readwrite");
-  const store = transaction.objectStore("pending");
 
-  store.add(record);
+  const transaction = db.transaction(["pending"], "readwrite");
+  const pendingStore = transaction.objectStore("pending");
+
 }
 
 function checkDatabase() {
-  const transaction = db.transaction(["pending"], "readwrite");
-  const store = transaction.objectStore("pending");
-  const getAll = store.getAll();
 
   getAll.onsuccess = function() {
     if (getAll.result.length > 0) {
@@ -41,15 +40,13 @@ function checkDatabase() {
         }
       })
       .then(response => response.json())
-        .then(() => {
-
-          const transaction = db.transaction(["pending"], "readwrite");
-          const store = transaction.objectStore("pending");
-          store.clear();
-        });
+      .then(() => {
+          // if successful, open a transaction on your pending db
+          // access your pending object store
+          // clear all items in your store
+      });
     }
   };
 }
 
-// listen for app coming back online
 window.addEventListener("online", checkDatabase);
